@@ -1,16 +1,4 @@
 services:
-  tailscale:
-    image: tailscale/tailscale:stable
-    hostname: clawdbot-gateway
-    environment:
-      TS_AUTHKEY: ${TAILSCALE_AUTHKEY}
-      TS_STATE_DIR: /var/lib/tailscale
-      TS_USERSPACE: "true"
-      TS_SERVE_CONFIG: /var/lib/tailscale/serve.json
-    volumes:
-      - tailscale-state:/var/lib/tailscale
-    restart: unless-stopped
-
   clawdbot-gateway:
     image: ${CLAWDBOT_IMAGE:-clawdbot:local}
     environment:
@@ -20,13 +8,14 @@ services:
       CLAUDE_AI_SESSION_KEY: ${CLAUDE_AI_SESSION_KEY}
       CLAUDE_WEB_SESSION_KEY: ${CLAUDE_WEB_SESSION_KEY}
       CLAUDE_WEB_COOKIE: ${CLAUDE_WEB_COOKIE}
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: "true"
+      TS_SERVE_CONFIG: /var/lib/tailscale/serve.json
     volumes:
       - clawdbot-config-dir:/home/node/.clawdbot
       - clawdbot-workspace-dir:/home/node/clawd
       - clawdbot-linuxbrew-dir:/home/node/.linuxbrew
-    network_mode: "service:tailscale"
-    depends_on:
-      - tailscale
+      - tailscale-state:/var/lib/tailscale
     init: true
     restart: unless-stopped
     command:

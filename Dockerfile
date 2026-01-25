@@ -29,11 +29,18 @@ RUN apt-get update \
   xz-utils \
   zstd \
   && if [ -n "$CLAWDBOT_DOCKER_APT_PACKAGES" ]; then \
-       DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $CLAWDBOT_DOCKER_APT_PACKAGES; \
-     fi \
+  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $CLAWDBOT_DOCKER_APT_PACKAGES; \
+  fi \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* \
   && chown -R node:node /app
+
+# Create Tailscale socket directory
+RUN mkdir -p /var/run/tailscale && chown node:node /var/run/tailscale
+
+# Install Tailscale CLI and daemon (static binaries)
+RUN curl -fsSL https://pkgs.tailscale.com/stable/tailscale_latest_arm64.tgz \
+  | tar xzf - --wildcards --strip-components=1 -C /usr/local/bin tailscale_*/tailscale tailscale_*/tailscaled
 
 USER node
 ENV HOME=/home/node
